@@ -14,15 +14,47 @@
 /** Parses SSML to a SSMLNode, throwing on invalid SSML */
 export function parseSSML(ssml: string): SSMLNode {
   // NOTE: Don't forget to run unescapeXMLChars on the SSMLText
+
+  // console.log("PARSE SSML", ssml)
+  const arr = ssml.split('>')
+
+  const attributes: any = []
+  arr.forEach((text: string, i: number) => {
+    if (i > 0) {
+      // FOR Children
+    }
+    if (text.includes('=')) {
+      const [tag, attributeKeyValueText] = text.split(' ')
+      if (attributeKeyValueText.includes('=')) {
+        const [key, stringedValue] = text.split('=')
+        attributes.push({
+          name: key,
+          value: stringedValue.replaceAll('"', ''),
+        })
+      }
+    }
+  })
   return {
-    name: '',
-    attributes: [],
+    name: 'speak',
+    attributes: attributes,
     children: [],
   }
 }
 
 /** Recursively converts SSML node to string and unescapes XML chars */
-export function ssmlNodeToText(node: SSMLNode): string {
+export function ssmlNodeToText(node: SSMLTag): string {
+  console.log('SSML to XML', node)
+  if (node.children.length) {
+    const val = node.children
+      .map((item) => {
+        if (typeof item === 'string') return item
+        return ssmlNodeToText(item)
+      })
+      .flat()
+      .toString()
+      .replaceAll(',', '')
+    return val as string
+  }
   return ''
 }
 
